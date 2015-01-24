@@ -1,0 +1,29 @@
+{
+    "name": "mmanos/laravel-taggable",
+    "description": "A tagging package for Laravel 4 models.",
+    "keywords": ["laravel", "tag", "tags", "tagging", "taggable", "model", "eloquent"],
+    "authors": [
+        {
+            "name": "Mark Manos",
+            "email": "mark@airpac.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "~4.1"
+    },
+    "suggest": {
+        
+    },
+    "autoload": {
+        "classmap": [
+            "src/migrations",
+            "src/commands"
+        ],
+        "psr-0": {
+            "Mmanos\\Taggable\\": "src/"
+        }
+    },
+    "minimum-stability": "stable",
+    "license": "MIT"
+}
