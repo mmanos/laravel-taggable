@@ -344,7 +344,7 @@ trait Taggable
 	 *
 	 * @param Eloquent|string|Collection|array $tag
 	 * 
-	 * @return \Illuminate\Database\Eloquent\Builder
+	 * @return QueryBuilder
 	 */
 	public static function withTag($tag)
 	{
@@ -356,7 +356,7 @@ trait Taggable
 	 *
 	 * @param int|array $id
 	 * 
-	 * @return \Illuminate\Database\Eloquent\Builder
+	 * @return QueryBuilder
 	 */
 	public static function withTagId($id)
 	{
@@ -368,7 +368,7 @@ trait Taggable
 	 *
 	 * @param Eloquent|string|Collection|array $tag
 	 * 
-	 * @return \Illuminate\Database\Eloquent\Builder
+	 * @return QueryBuilder
 	 */
 	public static function withAnyTag($tag)
 	{
@@ -380,7 +380,7 @@ trait Taggable
 	 *
 	 * @param int|array $id
 	 * 
-	 * @return \Illuminate\Database\Eloquent\Builder
+	 * @return QueryBuilder
 	 */
 	public static function withAnyTagId($id)
 	{
@@ -390,14 +390,14 @@ trait Taggable
 	/**
 	 * Begin querying the model's tagging table.
 	 *
-	 * @return \Illuminate\Database\Eloquent\Builder
+	 * @return QueryBuilder
 	 */
 	public static function queryTags()
 	{
 		$model = new static;
 		
 		$conn = $model->getConnection();
-		$query = new TagQueryBuilder(
+		$query = new QueryBuilder(
 			$conn,
 			$conn->getQueryGrammar(),
 			$conn->getPostProcessor()

@@ -5,7 +5,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
 
-class TagQueryBuilder extends Builder
+class QueryBuilder extends Builder
 {
 	protected $model;
 	protected $tag_context;
@@ -18,7 +18,7 @@ class TagQueryBuilder extends Builder
 	 *
 	 * @param \Illuminate\Database\Eloquent\Model $model
 	 * 
-	 * @return TagQueryBuilder
+	 * @return QueryBuilder
 	 */
 	public function setModel($model)
 	{
@@ -38,7 +38,7 @@ class TagQueryBuilder extends Builder
 	 *
 	 * @param mixed $tag_context
 	 * 
-	 * @return TagQueryBuilder
+	 * @return QueryBuilder
 	 */
 	public function withTagContext($tag_context)
 	{
@@ -52,7 +52,7 @@ class TagQueryBuilder extends Builder
 	 *
 	 * @param Eloquent|string|Collection|array $tag
 	 * 
-	 * @return TagQueryBuilder
+	 * @return QueryBuilder
 	 */
 	public function withTag($tag)
 	{
@@ -77,7 +77,7 @@ class TagQueryBuilder extends Builder
 	 *
 	 * @param int|array $id
 	 * 
-	 * @return TagQueryBuilder
+	 * @return QueryBuilder
 	 */
 	public function withTagId($id)
 	{
@@ -97,7 +97,7 @@ class TagQueryBuilder extends Builder
 	 *
 	 * @param Eloquent|string|Collection|array $tag
 	 * 
-	 * @return TagQueryBuilder
+	 * @return QueryBuilder
 	 */
 	public function withAnyTag($tag)
 	{
@@ -132,7 +132,7 @@ class TagQueryBuilder extends Builder
 	 *
 	 * @param int|array $id
 	 * 
-	 * @return TagQueryBuilder
+	 * @return QueryBuilder
 	 */
 	public function withAnyTagId($id)
 	{
@@ -155,7 +155,7 @@ class TagQueryBuilder extends Builder
 	 * Set the relationships that should be eager loaded.
 	 *
 	 * @param  mixed  $relations
-	 * @return TagQueryBuilder
+	 * @return QueryBuilder
 	 */
 	public function with($relations)
 	{
@@ -249,31 +249,36 @@ class TagQueryBuilder extends Builder
 			return ($a['num_items'] < $b['num_items']) ? -1 : 1;
 		});
 		
+		$set_distinct = false;
+		
 		$first_filter = current(array_splice($filters, 0, 1));
 		if (is_array($first_filter['id'])) {
 			$this->whereIn('t.tag_id', $first_filter['id']);
+			
+			if (!$set_distinct) {
+				$this->distinct();
+				$set_distinct = true;
+			}
 		}
 		else {
 			$this->where('t.tag_id', $first_filter['id']);
 		}
 		
-		$set_distinct = false;
-		
-		foreach ($filters as $i => $filter) {
-			$this->join("{$this->model->taggableTable()} AS t{$i}", function ($join) use ($i, $filter) {
+		foreach ($filters as $i => $f) {
+			$this->join("{$this->model->taggableTable()} AS t{$i}", function ($join) use ($i, $f) {
 				$join_query = $join->on('t.xref_id', '=', "t{$i}.xref_id");
 				
-				if (!is_array($filter['id'])) {
-					$join_query->where("t{$i}.tag_id", '=', $filter['id']);
+				if (!is_array($f['id'])) {
+					$join_query->where("t{$i}.tag_id", '=', $f['id']);
 				}
 			});
 			
-			if (is_array($filter['id'])) {
-				$this->whereIn("t{$i}.tag_id", $filter['id']);
+			if (is_array($f['id'])) {
+				$this->whereIn("t{$i}.tag_id", $f['id']);
 				
 				if (!$set_distinct) {
 					$this->distinct();
-					$distinct = true;
+					$set_distinct = true;
 				}
 			}
 		}
@@ -312,8 +317,6 @@ class TagQueryBuilder extends Builder
 			if (!isset($result->xref_id)) continue;
 			$xref_ids[] = $result->xref_id;
 		}
-		
-		//$xref_ids = array_unique($xref_ids);
 		
 		if (empty($xref_ids)) {
 			return $this->model->newCollection();
