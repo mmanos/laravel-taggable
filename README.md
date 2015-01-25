@@ -1,6 +1,6 @@
 # Tagging Package for Laravel 4
 
-This package provides adds a tagging support to your Laravel application. You can configure it to attach tags to any of your existing Eloquent models.
+This package adds tagging support to your Laravel application. You can configure it to attach tags to any of your existing Eloquent models.
 
 ## Installation
 
@@ -46,7 +46,7 @@ Once the migration has been created, simply run the `migrate` command.
 
 #### Model Setup
 
-Next, add the `Taggable` to each taggable-table model definition:
+Next, add the `Taggable` trait to each taggable model definition:
 
 ```php
 use Mmanos\Taggable\Taggable;
@@ -57,7 +57,7 @@ class User extends Eloquent
 }
 ```
 
-Then you need to specify the tag model as well as the taggable-table to use with your model:
+Then you need to specify the tag model as well as the taggable table to use with your model:
 
 ```php
 class User extends Eloquent
@@ -69,9 +69,9 @@ class User extends Eloquent
 
 #### Syncing Custom Attributes
 
-Sometimes you will want to have some of the same fields in your content table synced to the taggable-table records. This will allow you to filter and sort by these attributes when querying the taggable-table. Luckily this system will automatically sync any fields you define to the taggable-table records any time there are changes.
+Sometimes you will want to have some of the same fields in your content table synced to the taggable table records. This will allow you to filter and sort by these attributes when querying the taggable table. Luckily this system will automatically sync any fields you define to the taggable table records any time there are changes.
 
-To get started, **modify the taggable-table migration file** to include your additional fields.
+To get started, **modify the taggable migration file** to include your additional fields.
 
 Then, tell your model which fields it needs to sync:
 
@@ -82,13 +82,13 @@ class User extends Eloquent
 }
 ```
 
-Now every time you create or update a model, these fields will by synced to all taggable-table records for this piece of content.
+Now every time you create or update a model, these fields will by synced to all taggable table records for the piece of content.
 
 #### Syncing Deleted Content
 
-This package will automatically delete all taggable-table records for a piece of content when that piece of content is deleted.
+This package will automatically delete all taggable table records for a piece of content when that piece of content is deleted.
 
-If you are using the `SoftDeletingTrait` and you are syncing the `deleted_at` column to your taggable-table records, this package will automatically soft-delete all taggable-table records for a pice of content when that piece of content is deleted. If the content is restored, then the taggable-table records are restored as well.
+If you are using the `SoftDeletingTrait` and you are syncing the `deleted_at` column to your taggable table records, this package will automatically soft-delete all taggable table records for a piece of content when that piece of content is deleted. If the content is restored, then the taggable table records are restored as well.
 
 ## Working With Tags
 
@@ -170,11 +170,11 @@ These queries extend the same `QueryBuilder` class that you are used to working 
 $users = User::withTag('Frequent Visitor')
 	->where('tag_created_at', '>', '2015-01-01 00:00:00')
 	->with('company')
-	->orderBy('tag_created_at')
+	->orderBy('tag_created_at', 'desc')
 	->paginate(10);
 ```
 
-> **Note:** However, that the `update` and `delete` methods on a QueryBuilder object do not work for these queries.
+> **Note:** The `update` and `delete` methods on a QueryBuilder object do not work for these queries.
 
 You may query for content that has more than one tag:
 
@@ -188,9 +188,11 @@ You may also query for content that has any of the given tags:
 
 ```php
 $users = User::withAnyTag('Frequent Visitor', 'Happy')->get();
+// or
+$users = User::withAnyTag(['Frequent Visitor', 'Happy'])->get();
 ```
 
-> **Note:** Query performance can be reduced for these types of queries if your queries match thousands or records or more.
+> **Note:** Query performance can be reduced for these types of queries if your queries match thousands of records or more.
 
 And you may combine multiple filters:
 
@@ -203,9 +205,9 @@ $users = User::withTag('Agent')->withAnyTag('Frequent Visitor', 'Happy')->get();
 
 Sometimes you might want to associate your tags (summary table) records with some custom context for your application. For example, say you have a `companies` table and a `users` table and each user belongs to a company. And now you also want to associate each tag record with a company allowing you to fetch all tags used by each individual company. In order to do so, we have to tell this package to be aware of this company context and modify it's queries accordingly.
 
-To get started, make sure you **modify your tags migration** to include any context fields (`company_id`, in this case).
+To get started, make sure you **modify your tags migration** to include any context fields (`company_id`, in this case). You might also need to update the unique index, if necessary.
 
-Then modify your taggable-table model by adding a `tagContext` method:
+Then modify your taggable model by adding a `tagContext` method:
 
 ```php
 class User extends Eloquent
